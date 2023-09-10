@@ -25,17 +25,14 @@ void dht20_read_task(void *param)
     ESP_LOGI(TAG, "Entering measerument loop");
 
     while (1) {         /*@ infinite loop @*/
-
-        (void)dht20_read_data(&measurements);
-        ESP_LOGI(TAG, "Temperature:\t%.2fC.", measurements.temperature);
-        ESP_LOGI(TAG, "Humidity:   \t%.2f%%.\n", measurements.humidity);
-
-        if(dht20_is_calibrated())
-        {
-            ESP_LOGI(TAG,"is calibrated....");
-        }else{
-            ESP_LOGI(TAG,"is NOT calibrated....");
+        if (dht20_is_calibrated()) {
+            ESP_LOGI(TAG, "is calibrated....");
+        } else {
+            ESP_LOGI(TAG, "is NOT calibrated....");
         }
+        (void)dht20_read_data(&measurements);
+        ESP_LOGI(TAG, "Temperature:\t%.1fC.\t Avg: %.1fC", measurements.temperature, measurements.temp_avg);
+        ESP_LOGI(TAG, "Humidity:   \t%.1f%%.\t Avg: %.1f%%\n", measurements.humidity, measurements.humid_avg);
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         // monitor task Stack usage to fine tune StackDepth parameter of task.

@@ -8,6 +8,16 @@
 #include "toolbox.h"
 #include "sdkconfig.h"
 
+#ifdef CONFIG_FIR_FILTER_ENABLE
+#define FIR_FILTER_ENABLE 1
+#else
+#define FIR_FILTER_ENABLE 0
+#endif
+
+#ifdef FIR_FILTER_ENABLE
+#include "firfilter.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,7 +30,9 @@ extern "C" {
  */
 typedef struct dht20_data {
     float temperature;
+    float temp_avg;
     float humidity;
+    float humid_avg;
     uint32_t raw_humid;
     uint32_t raw_temp;
 } dht20_data_t;

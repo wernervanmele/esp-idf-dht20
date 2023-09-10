@@ -5,6 +5,12 @@ static bool dht20_reset_register(uint8_t register);
 static uint8_t dht20_reset_sensor(void);
 static uint8_t dht20_crc8(uint8_t *message, uint8_t Num);
 
+#ifdef FIR_FILTER_ENABLE
+FIRFilter dht20_avg_temp;
+FIRFilter dht20_avg_humid;
+
+#endif
+
 /**
  * @brief Initialize I2C bus and sensor.
  * Status register is checked for code 0x18 if not the sensor will be reset.
@@ -22,6 +28,10 @@ void dht20_begin(void)
 
     dht20_reset_sensor();                               // Check status register, if status not eq 0x18 reset the necearry registers.
 
+#ifdef FIR_FILTER_ENABLE
+    FIRFilter_Init(&dht20_avg_temp);
+    FIRFilter_Init(&dht20_avg_humid);
+#endif
 }
 
 /**
@@ -111,6 +121,7 @@ float dht20_read_data(dht20_data_t *data)
         raw_humid += rxdata[3] >> 4;
         data->raw_humid = raw_humid;
         data->humidity = (float)(raw_humid / 1048576.0f) * 100.0f;                                      // convert RAW to Humidity in %
+
         ESP_LOGD(__func__, "Humidity raw: %lu - Converted: %.1f %%", data->raw_humid, data->humidity);
 
         uint32_t raw_temp = (rxdata[3] & 0x0F);
@@ -120,8 +131,13 @@ float dht20_read_data(dht20_data_t *data)
         raw_temp += rxdata[5];
         data->raw_temp = raw_temp;
         data->temperature = (float)(raw_temp / 1048576.0f) * 200.0f - 50.0f;                            // convert RAW to Celsius C.
+
         ESP_LOGD(__func__, "Temperature raw: %lu - Converted: %.2fC.", data->raw_temp, data->temperature);
 
+#ifdef FIR_FILTER_ENABLE
+        data->humid_avg = FIRFilter_Update(&dht20_avg_humid, data->humidity);
+        data->temp_avg = FIRFilter_Update(&dht20_avg_temp, data->temperature);
+#endif
     } else {
         ESP_LOGE(__func__, "CRC Checksum failed !!!");
         return DHT20_ERROR_CHECKSUM;
