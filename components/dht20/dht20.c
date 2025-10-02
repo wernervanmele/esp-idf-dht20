@@ -84,7 +84,7 @@ float dht20_read_data(dht20_data_t *data)
 
     static uint8_t txbuf[3] = {0xAC, 0x33, 0x00};               // Start measuring command + 2 bytes as parameters ?
     static uint8_t status_byte[1] = { 0 };                      // retrieve measuring status
-    static uint8_t rxdata[6] = {0};                             // retrieve measurement data (temp + humid)
+    static uint8_t rxdata[7] = {0};                             // retrieve measurement data (temp + humid)
 
     i2c_write(DHT20_I2C_ADDRESS, txbuf, 3);
     vTaskDelay( 80 / portTICK_PERIOD_MS);                       // minimum delay as per datahseet.
